@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"eliz/blockchainn"
+	"fmt"
+)
 
 func main() {
-	fmt.Println("Welcome to ELIZE")
+	elize := blockchainn.GetBlockchain()
+	fmt.Println(elize.Blocks[0].Hash)
 }
