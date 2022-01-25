@@ -1,11 +1,7 @@
 package main
 
-import (
-	"eliz/blockchainn"
-	"fmt"
-)
+import "elizebch/explorer"
 
 func main() {
-	elize := blockchainn.GetBlockchain()
-	fmt.Println(elize.Blocks[0].Hash)
+	explorer.Start()
 }

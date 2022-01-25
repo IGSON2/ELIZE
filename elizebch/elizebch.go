@@ -1,4 +1,4 @@
-package blockchainn
+package elizebch
 
 import (
 	"crypto/sha256"
@@ -7,7 +7,7 @@ import (
 	"sync"
 )
 
-type block struct {
+type Block struct {
 	Height   int
 	Data     string
 	Hash     string
@@ -15,7 +15,7 @@ type block struct {
 }
 
 type blockchain struct {
-	Blocks []*block
+	Blocks []*Block
 }
 
 var (
@@ -26,32 +26,32 @@ var (
 func GetBlockchain() *blockchain {
 	if elize == nil {
 		syncOnce.Do(func() {
-			elize.addBlock("GENESIS")
+			elize = &blockchain{}
+			elize.AddBlock("GENESIS")
 		})
 	}
-	elize.addBlock("SECOND")
 	return elize
 }
 
-func (b *blockchain) addBlock(inputData string) {
+func (b *blockchain) AddBlock(inputData string) {
 	b.Blocks = append(b.Blocks, createBlock(inputData))
 }
 
-func createBlock(inputData string) *block {
-	newBlock := block{len(elize.Blocks) + 1, inputData, "", ""}
+func createBlock(inputData string) *Block {
+	newBlock := Block{len(elize.Blocks) + 1, inputData, "", ""}
 	newBlock.hashingData()
 	newBlock.getLastHash()
 	return &newBlock
 }
 
-func (b *block) hashingData() {
+func (b *Block) hashingData() {
 	hash := sha256.Sum256([]byte(b.Data + b.PrevHash + strconv.Itoa(b.Height)))
 	b.Hash = fmt.Sprintf("%x", hash)
 }
 
-func (b *block) getLastHash() {
+func (b *Block) getLastHash() {
 	if b.Height > 1 {
-		b.PrevHash = elize.Blocks[b.Height-1].Hash
+		b.PrevHash = elize.Blocks[b.Height-2].Hash
 	} else {
 		b.PrevHash = ""
 	}
