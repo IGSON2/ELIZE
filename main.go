@@ -1,7 +1,11 @@
 package main
 
-import "elizebch/explorer"
+import (
+	"elizebch/explorer"
+	"elizebch/restapi"
+)
 
 func main() {
-	explorer.Start()
+	go explorer.Start()
+	restapi.Start()
 }

@@ -2,16 +2,17 @@ package elizebch
 
 import (
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"strconv"
 	"sync"
 )
 
 type Block struct {
-	Height   int
-	Data     string
-	Hash     string
-	PrevHash string
+	Height   int    `json:"height"`
+	Data     string `json:"data"`
+	Hash     string `json:"hash"`
+	PrevHash string `json:"prevhash,omitempty"`
 }
 
 type blockchain struct {
@@ -55,4 +56,17 @@ func (b *Block) getLastHash() {
 	} else {
 		b.PrevHash = ""
 	}
+}
+
+func Allblock() []*Block {
+	return GetBlockchain().Blocks
+}
+
+func FindOneblock(hash string) (*Block, error) {
+	for _, block := range GetBlockchain().Blocks {
+		if hash == block.Hash {
+			return block, nil
+		}
+	}
+	return nil, errors.New("this block doesn't exist")
 }
