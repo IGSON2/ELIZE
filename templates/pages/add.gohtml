@@ -1,13 +1,13 @@
 {{define "add"}}
 <!DOCTYPE html>
 <html lang="en">
-  {{template "head"}}
+  {{template "head" .PageTitle}}
   <body>
-    {{template "header"}}
-    <main style="width: 100%;">
-        <form style="width: 100%;" method="POST">
-            <input type="text" placeholder="Data for your block" required name = "blockData" style="width: 50%; height: 15%;"/>
-            <button style="border-color: black; background-color: rgb(178, 25, 192);width: 20%; height: 40px;">Add Block</button>
+    {{template "header" .BlockHeight}}
+    <main>
+        <form method="POST">
+            <input type="text" placeholder="Data for your block" required name = "blockData"/>
+            <button>Add Block</button>
         </form>
     </main>
   {{template "footer"}}

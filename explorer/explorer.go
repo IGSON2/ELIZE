@@ -15,21 +15,24 @@ const (
 )
 
 type excuteData struct {
-	PageTitle string
-	Blocks    []*elizebch.Block
+	PageTitle   string
+	Blocks      []*elizebch.Block
+	BlockHeight int
 }
 
 var templates *template.Template
 
 func home(rw http.ResponseWriter, r *http.Request) {
-	data := excuteData{"HOME", elizebch.GetBlockchain().Blocks}
+	currentChain := elizebch.GetBlockchain().Blocks
+	data := excuteData{"HOME", currentChain, currentChain[0].Height}
 	elizeutils.Errchk(templates.ExecuteTemplate(rw, "home", data))
 }
 
 func add(rw http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
-		elizeutils.Errchk(templates.ExecuteTemplate(rw, "add", nil))
+		data := excuteData{"ADD", nil, 0}
+		elizeutils.Errchk(templates.ExecuteTemplate(rw, "add", data))
 	case "POST":
 		r.ParseForm()
 		data := r.Form.Get("blockData")

@@ -1,7 +1,7 @@
 {{define "block"}}
-    <div style="width:60%; margin:auto;padding: 10px;">
+    <div class="block">
         <div><b>Height </b> <span>{{.Height}}</span></div>
-        <div><b>Data  <span style="color: rgb(178, 25, 192)">{{.Data}}</span></b></div>
+        <div><b>Data  [ <span style="color: rgb(178, 25, 192)">{{.Data}}</span> ]</b></div>
         <div><b>Hash </b> <span>{{.Hash}}</span></div>
         <div>
             {{if .PrevHash}}

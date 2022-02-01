@@ -34,7 +34,7 @@ func GetBlockchain() *blockchain {
 }
 
 func (b *blockchain) AddBlock(inputData string) {
-	b.Blocks = append(b.Blocks, createBlock(inputData))
+	b.Blocks = append([]*Block{createBlock(inputData)}, b.Blocks...)
 }
 
 func createBlock(inputData string) *Block {
@@ -51,7 +51,7 @@ func (b *Block) hashingData() {
 
 func (b *Block) getLastHash() {
 	if b.Height > 1 {
-		b.PrevHash = elize.Blocks[b.Height-2].Hash
+		b.PrevHash = elize.Blocks[0].Hash
 	} else {
 		b.PrevHash = ""
 	}
