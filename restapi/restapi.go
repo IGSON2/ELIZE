@@ -10,9 +10,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-const (
-	port string = ":4000"
-)
+var port string
 
 type AddBlockBody struct {
 	Message string
@@ -25,6 +23,10 @@ type URLDescription struct {
 	Method      string       `json:"method"`
 	Description string       `json:"description"`
 	Payload     string       `json:"payload,omitempty"`
+}
+
+type errorResponse struct {
+	ErrorMessage string `json:"error_message"`
 }
 
 func (u *URLConverter) MarshalText() (test []byte, err error) {
@@ -56,14 +58,13 @@ func documentation(rw http.ResponseWriter, r *http.Request) {
 			Payload:     "data:string",
 		},
 	}
-	rw.Header().Add("Content-Type", "application/json")
 	json.NewEncoder(rw).Encode(data)
 }
 
 func blocks(rw http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
-		data := elizebch.Allblock()
+		data := elizebch.AllBlock()
 		json.NewEncoder(rw).Encode(data)
 	case "POST":
 		var addData AddBlockBody
@@ -76,16 +77,25 @@ func blocks(rw http.ResponseWriter, r *http.Request) {
 func oneblock(rw http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	hashId := vars["hash"]
-	resultBlock, err := elizebch.FindOneblock(hashId)
+	resultBlock, err := elizebch.FindBlock(hashId)
 	if err == nil {
 		json.NewEncoder(rw).Encode(*resultBlock)
 	} else {
-		json.NewEncoder(rw).Encode(err)
+		json.NewEncoder(rw).Encode(errorResponse{fmt.Sprintf("%s", err)})
 	}
 }
 
-func Start() {
+func middleWare(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		rw.Header().Add("Content-Type", "application/json")
+		next.ServeHTTP(rw, r)
+	})
+}
+
+func Start(apiPort int) {
+	port = fmt.Sprintf(":%d", apiPort)
 	gorillaMux := mux.NewRouter()
+	gorillaMux.Use(middleWare)
 	gorillaMux.HandleFunc("/", documentation).Methods("GET")
 	gorillaMux.HandleFunc("/blocks", blocks).Methods("GET", "POST")
 	gorillaMux.HandleFunc("/blocks/{hash:[a-f0-9]+}", oneblock).Methods("GET")

@@ -1,11 +1,12 @@
 package main
 
 import (
-	"elizebch/explorer"
-	"elizebch/restapi"
+	"elizebch/elizebch"
 )
 
 func main() {
-	go explorer.Start()
-	restapi.Start()
+	bch := elizebch.GetBlockchain()
+	bch.AddBlock("Fourth")
+	bch.AddBlock("Fifth")
+	bch.AddBlock("Sixth")
 }

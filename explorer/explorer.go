@@ -9,9 +9,8 @@ import (
 )
 
 const (
-	port             string = ":5000"
-	pagesLocation    string = "templates/pages/*.gohtml"
-	partialsLocation string = "templates/partials/*.gohtml"
+	pagesLocation    string = "templates/pages/*.html"
+	partialsLocation string = "templates/partials/*.html"
 )
 
 type excuteData struct {
@@ -20,10 +19,13 @@ type excuteData struct {
 	BlockHeight int
 }
 
-var templates *template.Template
+var (
+	templates *template.Template
+	port      string = ":5000"
+)
 
 func home(rw http.ResponseWriter, r *http.Request) {
-	currentChain := elizebch.GetBlockchain().Blocks
+	currentChain := elizebch.AllBlock()
 	data := excuteData{"HOME", currentChain, currentChain[0].Height}
 	elizeutils.Errchk(templates.ExecuteTemplate(rw, "home", data))
 }
@@ -41,7 +43,8 @@ func add(rw http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func Start() {
+func Start(explorerPort int) {
+	port = fmt.Sprintf(":%d", explorerPort)
 	fmt.Printf("Listening on http://localhost%s\n", port)
 	templates = template.Must(template.ParseGlob(pagesLocation))
 	templates = template.Must(templates.ParseGlob(partialsLocation))
