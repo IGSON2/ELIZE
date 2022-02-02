@@ -1,12 +1,11 @@
 package main
 
 import (
-	"elizebch/elizebch"
+	"elizebch/cli"
+	"elizebch/database"
 )
 
 func main() {
-	bch := elizebch.GetBlockchain()
-	bch.AddBlock("Fourth")
-	bch.AddBlock("Fifth")
-	bch.AddBlock("Sixth")
+	defer database.Close()
+	cli.Start()
 }

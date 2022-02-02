@@ -30,21 +30,21 @@ func FindBlock(hash string) (*Block, error) {
 	if data == nil {
 		return nil, errors.New("this block doesn't exist")
 	} else {
-		elizeutils.FromBytes(EmptyBlock, []byte(hash))
+		elizeutils.FromBytes(EmptyBlock, []byte(data))
 		return EmptyBlock, nil
 	}
 }
 
 func AllBlock() []*Block {
-	newestBlock, err := FindBlock(elize.NewestHash)
+	newestBlock, err := FindBlock(GetBlockchain().NewestHash)
+	var allBlocks = []*Block{newestBlock}
 	elizeutils.Errchk(err)
-	var allBlocks []*Block
-	for err != nil {
+	for {
 		newestBlock, err = FindBlock(newestBlock.PrevHash)
+		if err != nil {
+			break
+		}
 		allBlocks = append(allBlocks, newestBlock)
-	}
-	for _, tinyblock := range allBlocks {
-		fmt.Println(tinyblock)
 	}
 	return allBlocks
 }

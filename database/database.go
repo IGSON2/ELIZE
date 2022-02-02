@@ -32,6 +32,10 @@ func DB() *bolt.DB {
 	return db
 }
 
+func Close() {
+	DB().Close()
+}
+
 func SaveBlock(hash string, data []byte) {
 	fmt.Printf("Data Saved ! %s\n", data)
 	err := DB().Update(func(t *bolt.Tx) error {
