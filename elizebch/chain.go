@@ -31,8 +31,10 @@ func GetBlockchain() *blockchain {
 			elize = &blockchain{}
 			lastPoint := database.LastBlockPoint()
 			if lastPoint == nil {
+				fmt.Println("Init")
 				elize.AddBlock("GENESIS")
 			} else {
+				fmt.Println("Restore")
 				elize.restore(lastPoint)
 			}
 		})
@@ -47,28 +49,35 @@ func (b *blockchain) restore(lastPoint []byte) {
 func (b *blockchain) AddBlock(inputData string) {
 	var newBlock Block
 	newBlock.createBlock(inputData, b)
-	b = &blockchain{NewestHash: newBlock.Hash,
-		Height: newBlock.Height,
+	b = &blockchain{
+		NewestHash:        newBlock.Hash,
+		Height:            newBlock.Height,
+		CurrentDifficulty: newBlock.Difficulty,
 	}
-	fmt.Println("Before : ", newBlock.Difficulty)
-	b.recalculateDifficulty()
-	fmt.Println("After : ", newBlock.Difficulty)
+	fmt.Println("BlockChain : ", b)
 	database.SaveBlockchain(elizeutils.ToBytes(b))
 }
 
-func (b *blockchain) recalculateDifficulty() {
-	if b.Height == 1 {
-		b.CurrentDifficulty = defaultDifficulty
+func (b *blockchain) recalculateDifficulty() int {
+	allblock := AllBlock()
+	actualTime := (allblock[0].TimeStamp - allblock[minuteInterval-1].TimeStamp) / 60
+	expectedTime := int64(minuteInterval * blockInterval)
+	if actualTime < expectedTime-allowedRange {
+		b.CurrentDifficulty++
+		fmt.Println("BlockChain Difficulty has been increased.")
+	} else if actualTime > expectedTime+allowedRange {
+		b.CurrentDifficulty--
+		fmt.Println("BlockChain Difficulty has been decreased.")
+	}
+	return b.CurrentDifficulty
+}
+
+func (b *blockchain) Difficulty() int {
+	if b.Height == 0 {
+		return defaultDifficulty
 	} else if b.Height%blockInterval == 0 {
-		allblock := AllBlock()
-		actualTime := allblock[0].TimeStamp - allblock[minuteInterval-1].TimeStamp
-		expectedTime := int64(minuteInterval * blockInterval)
-		if actualTime < expectedTime-allowedRange {
-			b.CurrentDifficulty++
-			fmt.Println("BlockChain Difficulty has been increased.")
-		} else if actualTime > expectedTime+allowedRange {
-			b.CurrentDifficulty--
-			fmt.Println("BlockChain Difficulty has been decreased.")
-		}
+		return b.recalculateDifficulty()
+	} else {
+		return b.CurrentDifficulty
 	}
 }
