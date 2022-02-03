@@ -2,7 +2,6 @@ package database
 
 import (
 	"elizebch/elizeutils"
-	"fmt"
 
 	bolt "go.etcd.io/bbolt"
 )
@@ -37,7 +36,6 @@ func Close() {
 }
 
 func SaveBlock(hash string, data []byte) {
-	fmt.Printf("Data Saved ! %s\n", data)
 	err := DB().Update(func(t *bolt.Tx) error {
 		blockbucket := t.Bucket([]byte(blocksBucket))
 		return blockbucket.Put([]byte(hash), data)
