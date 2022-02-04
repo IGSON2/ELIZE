@@ -33,8 +33,7 @@ func home(rw http.ResponseWriter, r *http.Request) {
 func add(rw http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
-		currentChain := elizebch.AllBlock()
-		data := excuteData{"ADD", nil, currentChain[0].Height}
+		data := excuteData{"ADD", nil, elizebch.GetBlockchain().Height}
 		elizeutils.Errchk(templates.ExecuteTemplate(rw, "add", data))
 	case "POST":
 		r.ParseForm()

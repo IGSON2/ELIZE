@@ -19,14 +19,20 @@ type Block struct {
 	TimeStamp  int64  `json:"timestamp"`
 }
 
+const (
+	defaultDifficulty       = 2
+	minuteInterval          = 2
+	blockInterval           = 5
+	allowedRange      int64 = 2
+)
+
 func (b *Block) createBlock(inputData string, chain *blockchain) {
 	*b = Block{
-		Height:     chain.Height + 1,
-		Data:       inputData,
-		PrevHash:   chain.NewestHash,
-		Difficulty: GetBlockchain().Difficulty(),
+		Height:   chain.Height + 1,
+		Data:     inputData,
+		PrevHash: chain.NewestHash,
 	}
-	fmt.Println("Difficulty in createBlock() : ", b.Difficulty)
+	b.setDifficulty()
 	b.mine()
 	database.SaveBlock(b.Hash, elizeutils.ToBytes(b))
 }
@@ -37,11 +43,32 @@ func (b *Block) mine() {
 	for !strings.HasPrefix(hashedBlock, target) {
 		hashedBlock = elizeutils.Hash(b)
 		b.Nonce++
-		fmt.Println("Mining Hash : ", hashedBlock)
 	}
-	fmt.Println("Block in mine()", b)
 	b.TimeStamp = int64(time.Now().Unix())
 	b.Hash = hashedBlock
+}
+
+func (b *Block) recalculateDifficulty() {
+	allblock := AllBlock()
+	actualTime := (allblock[0].TimeStamp - allblock[minuteInterval-1].TimeStamp) / 60
+	expectedTime := int64(minuteInterval * blockInterval)
+	if actualTime < expectedTime-allowedRange {
+		b.Difficulty = AllBlock()[0].Difficulty + 1
+		fmt.Println("BlockChain Difficulty has been increased.")
+	} else if actualTime > expectedTime+allowedRange {
+		b.Difficulty = AllBlock()[0].Difficulty - 1
+		fmt.Println("BlockChain Difficulty has been decreased.")
+	}
+}
+
+func (b *Block) setDifficulty() {
+	if b.Height == 1 {
+		b.Difficulty = defaultDifficulty
+	} else if b.Height%blockInterval == 0 {
+		b.recalculateDifficulty()
+	} else {
+		b.Difficulty = AllBlock()[0].Difficulty
+	}
 }
 
 func FindBlock(hash string) (*Block, error) {
@@ -57,7 +84,6 @@ func FindBlock(hash string) (*Block, error) {
 
 func AllBlock() []*Block {
 	newestBlock, err := FindBlock(GetBlockchain().NewestHash)
-	fmt.Println("Block in AllBlock()", newestBlock)
 	elizeutils.Errchk(err)
 	var allBlocks = []*Block{newestBlock}
 	for {
