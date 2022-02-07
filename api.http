@@ -2,10 +2,12 @@ http://localhost:4000/
 ###
 http://localhost:4000/blocks
 ###
-http://localhost:4000/blocks/cbc95b878cd17d5d484c48b135fcd023145d44213243674de498acc1053af5bc
+http://localhost:4000/blocks/acc8ac06070d443b271bf264e05e355a1559532e6f5625cbbedc95909717cda7
 ###
 POST http://localhost:4000/blocks
 
 {
     "message":"Data For My block"
 }
+###
+http://localhost:4000/balance/igson?total=true

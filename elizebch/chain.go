@@ -25,7 +25,7 @@ func GetBlockchain() *blockchain {
 			lastPoint := database.LastBlockPoint()
 			if lastPoint == nil {
 				fmt.Println("Init")
-				elize.AddBlock("GENESIS")
+				elize.AddBlock()
 			} else {
 				fmt.Println("Restore")
 				elize.restore(lastPoint)
@@ -39,9 +39,9 @@ func (b *blockchain) restore(lastPoint []byte) {
 	elizeutils.FromBytes(b, lastPoint)
 }
 
-func (b *blockchain) AddBlock(inputData string) {
+func (b *blockchain) AddBlock() {
 	var newBlock Block
-	newBlock.createBlock(inputData, b)
+	newBlock.createBlock(b)
 	b.NewestHash = newBlock.Hash
 	b.CurrentDifficulty = newBlock.Difficulty
 	b.Height = newBlock.Height

@@ -10,13 +10,13 @@ import (
 )
 
 type Block struct {
-	Height     int    `json:"height"`
-	Data       string `json:"data"`
-	Hash       string `json:"hash"`
-	PrevHash   string `json:"prevhash,omitempty"`
-	Nonce      int    `json:"nonce"`
-	Difficulty int    `json:"difficulty"`
-	TimeStamp  int64  `json:"timestamp"`
+	Height      int    `json:"height"`
+	Hash        string `json:"hash"`
+	PrevHash    string `json:"prevhash,omitempty"`
+	Nonce       int    `json:"nonce"`
+	Difficulty  int    `json:"difficulty"`
+	TimeStamp   int64  `json:"timestamp"`
+	Transaction []*Tx  `json:"transactions"`
 }
 
 const (
@@ -26,11 +26,11 @@ const (
 	allowedRange      int64 = 2
 )
 
-func (b *Block) createBlock(inputData string, chain *blockchain) {
+func (b *Block) createBlock(chain *blockchain) {
 	*b = Block{
-		Height:   chain.Height + 1,
-		Data:     inputData,
-		PrevHash: chain.NewestHash,
+		Height:      chain.Height + 1,
+		PrevHash:    chain.NewestHash,
+		Transaction: []*Tx{CoinbaseTx("igson")},
 	}
 	b.setDifficulty()
 	b.mine()
@@ -50,7 +50,7 @@ func (b *Block) mine() {
 
 func (b *Block) recalculateDifficulty() {
 	allblock := AllBlock()
-	actualTime := (allblock[0].TimeStamp - allblock[minuteInterval-1].TimeStamp) / 60
+	actualTime := (allblock[0].TimeStamp - allblock[blockInterval-2].TimeStamp) / 60
 	expectedTime := int64(minuteInterval * blockInterval)
 	if actualTime < expectedTime-allowedRange {
 		b.Difficulty = AllBlock()[0].Difficulty + 1

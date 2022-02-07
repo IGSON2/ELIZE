@@ -12,8 +12,9 @@ import (
 
 var port string
 
-type AddBlockBody struct {
-	Message string
+type BalanceResponse struct {
+	Address string  `json:"address"`
+	Balance float64 `json:"balance"`
 }
 
 type URLConverter string
@@ -53,9 +54,13 @@ func documentation(rw http.ResponseWriter, r *http.Request) {
 		},
 		{
 			URL:         URLConverter("/blocks/{hash}"),
-			Method:      "POST",
-			Description: "Add A Block",
-			Payload:     "data:string",
+			Method:      "GET",
+			Description: "See A Block",
+		},
+		{
+			URL:         URLConverter("/balance/{address}"),
+			Method:      "GET",
+			Description: "Get TxOuts for an Address",
 		},
 	}
 	json.NewEncoder(rw).Encode(data)
@@ -67,9 +72,7 @@ func blocks(rw http.ResponseWriter, r *http.Request) {
 		data := elizebch.AllBlock()
 		json.NewEncoder(rw).Encode(data)
 	case "POST":
-		var addData AddBlockBody
-		elizeutils.Errchk(json.NewDecoder(r.Body).Decode(&addData))
-		elizebch.GetBlockchain().AddBlock(addData.Message)
+		elizebch.GetBlockchain().AddBlock()
 		rw.WriteHeader(http.StatusCreated)
 	}
 }
@@ -82,6 +85,19 @@ func oneblock(rw http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(rw).Encode(*resultBlock)
 	} else {
 		json.NewEncoder(rw).Encode(errorResponse{fmt.Sprintf("%s", err)})
+	}
+}
+
+func balance(rw http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	address := vars["address"]
+	isTotalQuery := r.URL.Query().Get("total")
+	switch isTotalQuery {
+	case "true":
+		balance := elizebch.BalanceByAddress(address)
+		elizeutils.Errchk(json.NewEncoder(rw).Encode(BalanceResponse{address, balance}))
+	default:
+		elizeutils.Errchk(json.NewEncoder(rw).Encode(elizebch.TxOutsByAddress(address)))
 	}
 }
 
@@ -99,6 +115,7 @@ func Start(apiPort int) {
 	gorillaMux.HandleFunc("/", documentation).Methods("GET")
 	gorillaMux.HandleFunc("/blocks", blocks).Methods("GET", "POST")
 	gorillaMux.HandleFunc("/blocks/{hash:[a-f0-9]+}", oneblock).Methods("GET")
+	gorillaMux.HandleFunc("/balance/{address}", balance).Methods("GET")
 	fmt.Printf("Listening on http://localhost%s\n", port)
 	elizeutils.Errchk(http.ListenAndServe(port, gorillaMux))
 }
