@@ -85,12 +85,12 @@ func UTxOutsByAddress(address string) []*UTxOut {
 }
 
 func BalanceByAddress(address string) float64 {
-	var tempBalance float64
+	var UnspendBalance float64
 	uTxOuts := UTxOutsByAddress(address)
 	for _, uTxOut := range uTxOuts {
-		tempBalance += uTxOut.Balance
+		UnspendBalance += uTxOut.Balance
 	}
-	return tempBalance
+	return UnspendBalance
 }
 
 func makeTxs(from, to string, amount float64) (*Tx, error) {
@@ -109,8 +109,11 @@ func makeTxs(from, to string, amount float64) (*Tx, error) {
 		txIns = append(txIns, &TxIn{uTxOut.ID, uTxOut.Index, from})
 		total += uTxOut.Balance
 	}
-	changeTxOut := &TxOut{from, total - amount}
-	txOuts = append(txOuts, changeTxOut)
+	if change := (total - amount); change != 0 {
+		changeTxOut := &TxOut{from, change}
+		txOuts = append(txOuts, changeTxOut)
+	}
+
 	txOuts = append(txOuts, &TxOut{to, amount})
 
 	tx := &Tx{
