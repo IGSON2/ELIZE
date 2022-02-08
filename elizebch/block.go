@@ -28,9 +28,8 @@ const (
 
 func (b *Block) createBlock(chain *blockchain) {
 	*b = Block{
-		Height:      chain.Height + 1,
-		PrevHash:    chain.NewestHash,
-		Transaction: []*Tx{CoinbaseTx("igson")},
+		Height:   chain.Height + 1,
+		PrevHash: chain.NewestHash,
 	}
 	b.setDifficulty()
 	b.mine()
@@ -45,6 +44,7 @@ func (b *Block) mine() {
 		b.Nonce++
 	}
 	b.TimeStamp = int64(time.Now().Unix())
+	b.ConfirmTx()
 	b.Hash = hashedBlock
 }
 
@@ -94,4 +94,10 @@ func AllBlock() []*Block {
 		allBlocks = append(allBlocks, newestBlock)
 	}
 	return allBlocks
+}
+
+func (b *Block) ConfirmTx() {
+	confirmedTx := append(ElizeMempool.Txs, CoinbaseTx("igson"))
+	ElizeMempool.Txs = []*Tx{}
+	b.Transaction = confirmedTx
 }

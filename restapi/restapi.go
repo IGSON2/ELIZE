@@ -12,6 +12,11 @@ import (
 
 var port string
 
+type AddTxPayload struct {
+	To     string  `json:"to"`
+	Amount float64 `json:"amount"`
+}
+
 type BalanceResponse struct {
 	Address string  `json:"address"`
 	Balance float64 `json:"balance"`
@@ -62,8 +67,20 @@ func documentation(rw http.ResponseWriter, r *http.Request) {
 			Method:      "GET",
 			Description: "Get TxOuts for an Address",
 		},
+		{
+			URL:         URLConverter("/balance/{address}"),
+			Method:      "GET",
+			Description: "Get TxOuts for an Address",
+		},
 	}
 	json.NewEncoder(rw).Encode(data)
+}
+
+func middleWare(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		rw.Header().Add("Content-Type", "application/json")
+		next.ServeHTTP(rw, r)
+	})
 }
 
 func blocks(rw http.ResponseWriter, r *http.Request) {
@@ -97,15 +114,23 @@ func balance(rw http.ResponseWriter, r *http.Request) {
 		balance := elizebch.BalanceByAddress(address)
 		elizeutils.Errchk(json.NewEncoder(rw).Encode(BalanceResponse{address, balance}))
 	default:
-		elizeutils.Errchk(json.NewEncoder(rw).Encode(elizebch.TxOutsByAddress(address)))
+		elizeutils.Errchk(json.NewEncoder(rw).Encode(elizebch.UTxOutsByAddress(address)))
 	}
 }
 
-func middleWare(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		rw.Header().Add("Content-Type", "application/json")
-		next.ServeHTTP(rw, r)
-	})
+func transaction(rw http.ResponseWriter, r *http.Request) {
+	var txReqPayload AddTxPayload
+	elizeutils.Errchk(json.NewDecoder(r.Body).Decode(&txReqPayload))
+	err := elizebch.ElizeMempool.AddTxs(txReqPayload.To, txReqPayload.Amount)
+	if err != nil {
+		json.NewEncoder(rw).Encode(errorResponse{elizebch.NotEnoughBalanceErr})
+	} else {
+		rw.WriteHeader(http.StatusCreated)
+	}
+}
+
+func mempool(rw http.ResponseWriter, r *http.Request) {
+	json.NewEncoder(rw).Encode(elizebch.ElizeMempool)
 }
 
 func Start(apiPort int) {
@@ -116,6 +141,8 @@ func Start(apiPort int) {
 	gorillaMux.HandleFunc("/blocks", blocks).Methods("GET", "POST")
 	gorillaMux.HandleFunc("/blocks/{hash:[a-f0-9]+}", oneblock).Methods("GET")
 	gorillaMux.HandleFunc("/balance/{address}", balance).Methods("GET")
+	gorillaMux.HandleFunc("/mempool", mempool).Methods("GET")
+	gorillaMux.HandleFunc("/transaction", transaction).Methods("GET", "POST")
 	fmt.Printf("Listening on http://localhost%s\n", port)
 	elizeutils.Errchk(http.ListenAndServe(port, gorillaMux))
 }
