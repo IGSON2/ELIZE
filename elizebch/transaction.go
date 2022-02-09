@@ -2,6 +2,7 @@ package elizebch
 
 import (
 	"elizebch/elizeutils"
+	"elizebch/wallet"
 	"errors"
 	"time"
 )
@@ -126,7 +127,7 @@ func makeTxs(from, to string, amount float64) (*Tx, error) {
 }
 
 func (m *Mempool) AddTxs(to string, amount float64) error {
-	memTX, err := makeTxs("igson", to, amount)
+	memTX, err := makeTxs(wallet.Wallet().Address, to, amount)
 	if err != nil {
 		return err
 	}

@@ -3,6 +3,7 @@ package elizebch
 import (
 	"elizebch/database"
 	"elizebch/elizeutils"
+	"elizebch/wallet"
 	"errors"
 	"fmt"
 	"strings"
@@ -97,7 +98,7 @@ func AllBlock() []*Block {
 }
 
 func (b *Block) ConfirmTx() {
-	confirmedTx := append(ElizeMempool.Txs, CoinbaseTx("igson"))
+	confirmedTx := append(ElizeMempool.Txs, CoinbaseTx(wallet.Wallet().Address))
 	ElizeMempool.Txs = []*Tx{}
 	b.Transaction = confirmedTx
 }
