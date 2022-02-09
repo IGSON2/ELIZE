@@ -36,7 +36,7 @@ type UTxOut struct {
 }
 
 type Mempool struct {
-	Txs []*Tx
+	Txs []*Tx `json:"tx"`
 }
 
 var ElizeMempool = Mempool{}

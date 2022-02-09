@@ -19,19 +19,17 @@ var (
 )
 
 func GetBlockchain() *blockchain {
-	if elize == nil {
-		syncOnce.Do(func() {
-			elize = &blockchain{}
-			lastPoint := database.LastBlockPoint()
-			if lastPoint == nil {
-				fmt.Println("Init")
-				elize.AddBlock()
-			} else {
-				fmt.Println("Restore")
-				elize.restore(lastPoint)
-			}
-		})
-	}
+	syncOnce.Do(func() {
+		elize = &blockchain{}
+		lastPoint := database.LastBlockPoint()
+		if lastPoint == nil {
+			fmt.Println("Init")
+			elize.AddBlock()
+		} else {
+			fmt.Println("Restore")
+			elize.restore(lastPoint)
+		}
+	})
 	return elize
 }
 
