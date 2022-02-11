@@ -1,9 +1,11 @@
 package main
 
-import "elizebch/wallet"
+import (
+	"elizebch/cli"
+	"elizebch/database"
+)
 
 func main() {
-	// defer database.Close()
-	// cli.Start()
-	wallet.Start()
+	defer database.Close()
+	cli.Start()
 }

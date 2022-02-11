@@ -2,7 +2,7 @@ http://localhost:4000/
 ###
 http://localhost:4000/blocks
 ###
-http://localhost:4000/blocks/acc8ac06070d443b271bf264e05e355a1559532e6f5625cbbedc95909717cda7
+http://localhost:4000/blocks/980b0d28952d2850f693a0290824981cebc65066f200185a8ec23f37ce7e8218e739332c4a59f2aa00d200a361b643d6aa5950a2595ce1e266450c81a6c2199d
 ###
 POST http://localhost:4000/blocks
 
@@ -10,13 +10,13 @@ POST http://localhost:4000/blocks
     "message":"Data For My block"
 }
 ###
-http://localhost:4000/balance/igson?total=true
+http://localhost:4000/balance/fe18dcb3cfd49e694c6160328ad1944309dfefc7e96cc74827b5dd329e66483eb83198cceb5a95c5530f7cfa89991680a8b67a991d12d36275e10fb826f4f7ae?total=true
 
 ###
 http://localhost:4000/balance/Lynn?total=true
 
 ###
-http://localhost:4000/balance/igson
+http://localhost:4000/balance/312e6e3e556d3db4b29dc4acc8d42ca74e4116a8bb54799551b0823db8547c42b494770384452dc668543bc7feb82463d9662cbbbe7e7deaa1a56fc1d384aaa3
 
 ###
 http://localhost:4000/balance/Lynn
@@ -26,8 +26,9 @@ POST http://localhost:4000/transaction
 
 {
     "to":"Lynn",
-    "amount":100
+    "amount":70
 }
-
 ###
 http://localhost:4000/mempool
+###
+http://localhost:4000/wallet

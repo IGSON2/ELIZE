@@ -10,6 +10,7 @@ import (
 const (
 	minerReward         int = 50
 	NotEnoughBalanceErr     = "not enough balance"
+	NotVerified             = "not verified"
 )
 
 type Tx struct {
@@ -20,18 +21,18 @@ type Tx struct {
 }
 
 type TxIn struct {
-	ID    string `json:"id"`
-	Index int    `json:"index"`
-	Owner string `json:"owner"`
+	TXID      string `json:"id"`
+	Index     int    `json:"index"`
+	Signature string `json:"signature"`
 }
 
 type TxOut struct {
-	Owner   string  `json:"owner"`
+	Address string  `json:"address"`
 	Balance float64 `json:"balance"`
 }
 
 type UTxOut struct {
-	ID      string  `json:"id"`
+	TXID    string  `json:"id"`
 	Index   int     `json:"index"`
 	Balance float64 `json:"balance"`
 }
@@ -47,36 +48,38 @@ func (t *Tx) getId() {
 }
 
 func CoinbaseTx(miner string) *Tx {
-	var newTx *Tx = &Tx{
+	newTx := Tx{
+		ID:        "",
 		TimeStamp: time.Now().Unix(),
 		TxIns: []*TxIn{
 			{"", -1, "COINBASE"},
 		},
 		TxOuts: []*TxOut{
-			{Owner: miner, Balance: float64(minerReward)},
+			{Address: miner, Balance: float64(minerReward)},
 		},
 	}
 	newTx.getId()
-	return newTx
+	return &newTx
 }
 
 func UTxOutsByAddress(address string) []*UTxOut {
 	var uTxOuts []*UTxOut
 	var spentTxOuts = make(map[string]bool)
-	for _, block := range AllBlock() {
-		for _, tx := range block.Transaction {
-			for _, txIn := range tx.TxIns {
-				if txIn.Owner == address {
-					spentTxOuts[txIn.ID] = true
-				}
+	for _, tx := range AllTxs() {
+		for _, txIn := range tx.TxIns {
+			if txIn.Signature == "COINBASE" {
+				break
 			}
-			for index, txOut := range tx.TxOuts {
-				if txOut.Owner == address {
-					if _, exist := spentTxOuts[tx.ID]; !exist {
-						utxout := &UTxOut{tx.ID, index, txOut.Balance}
-						if !isOnMempool(utxout) {
-							uTxOuts = append(uTxOuts, utxout)
-						}
+			if FindTxs(txIn.TXID).TxOuts[txIn.Index].Address == address {
+				spentTxOuts[txIn.TXID] = true
+			}
+		}
+		for index, txOut := range tx.TxOuts {
+			if txOut.Address == address {
+				if _, exist := spentTxOuts[tx.ID]; !exist {
+					utxout := &UTxOut{tx.ID, index, txOut.Balance}
+					if !isOnMempool(utxout) {
+						uTxOuts = append(uTxOuts, utxout)
 					}
 				}
 			}
@@ -107,7 +110,10 @@ func makeTxs(from, to string, amount float64) (*Tx, error) {
 	uTxOuts := UTxOutsByAddress(from)
 
 	for _, uTxOut := range uTxOuts {
-		txIns = append(txIns, &TxIn{uTxOut.ID, uTxOut.Index, from})
+		if total >= amount {
+			break
+		}
+		txIns = append(txIns, &TxIn{uTxOut.TXID, uTxOut.Index, ""})
 		total += uTxOut.Balance
 	}
 	if change := (total - amount); change != 0 {
@@ -116,13 +122,17 @@ func makeTxs(from, to string, amount float64) (*Tx, error) {
 	}
 
 	txOuts = append(txOuts, &TxOut{to, amount})
-
 	tx := &Tx{
 		TimeStamp: time.Now().Unix(),
 		TxIns:     txIns,
 		TxOuts:    txOuts,
 	}
 	tx.getId()
+	tx.sign()
+	verify := txVerify(tx)
+	if !verify {
+		return nil, errors.New(NotVerified)
+	}
 	return tx, nil
 }
 
@@ -140,11 +150,51 @@ func isOnMempool(utxout *UTxOut) bool {
 Outer:
 	for _, tx := range ElizeMempool.Txs {
 		for _, txin := range tx.TxIns {
-			if txin.ID == utxout.ID && txin.Index == utxout.Index {
+			if txin.TXID == utxout.TXID && txin.Index == utxout.Index {
 				exist = true
 				break Outer
 			}
 		}
 	}
 	return exist
+}
+
+func AllTxs() []*Tx {
+	var Txs []*Tx
+	for _, block := range AllBlock() {
+		Txs = append(Txs, block.Transaction...)
+	}
+	return Txs
+}
+
+func FindTxs(txID string) *Tx {
+	for _, tx := range AllTxs() {
+		if txID == tx.ID {
+			return tx
+		}
+	}
+	return nil
+}
+
+func (t *Tx) sign() {
+	for _, txin := range t.TxIns {
+		txin.Signature = wallet.Sign(wallet.Wallet(), t.ID)
+	}
+}
+
+func txVerify(t *Tx) bool {
+	verify := false
+	for _, txIn := range t.TxIns {
+		prevTx := FindTxs(txIn.TXID)
+		if prevTx == nil {
+			verify = false
+			break
+		}
+		address := prevTx.TxOuts[txIn.Index].Address
+		verify = wallet.Verify(txIn.Signature, t.ID, address)
+		if verify {
+			break
+		}
+	}
+	return verify
 }

@@ -3,6 +3,7 @@ package restapi
 import (
 	"elizebch/elizebch"
 	"elizebch/elizeutils"
+	"elizebch/wallet"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -20,6 +21,10 @@ type AddTxPayload struct {
 type BalanceResponse struct {
 	Address string  `json:"address"`
 	Balance float64 `json:"balance"`
+}
+
+type WalletAddress struct {
+	Address string `json:"wallet_address"`
 }
 
 type URLConverter string
@@ -123,7 +128,7 @@ func transaction(rw http.ResponseWriter, r *http.Request) {
 	elizeutils.Errchk(json.NewDecoder(r.Body).Decode(&txReqPayload))
 	err := elizebch.ElizeMempool.AddTxs(txReqPayload.To, txReqPayload.Amount)
 	if err != nil {
-		json.NewEncoder(rw).Encode(errorResponse{elizebch.NotEnoughBalanceErr})
+		json.NewEncoder(rw).Encode(errorResponse{err.Error()})
 	} else {
 		rw.WriteHeader(http.StatusCreated)
 	}
@@ -131,6 +136,11 @@ func transaction(rw http.ResponseWriter, r *http.Request) {
 
 func mempool(rw http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(rw).Encode(elizebch.ElizeMempool)
+}
+
+func publicwallet(rw http.ResponseWriter, r *http.Request) {
+	address := WalletAddress{wallet.Wallet().Address}
+	json.NewEncoder(rw).Encode(address)
 }
 
 func Start(apiPort int) {
@@ -143,6 +153,7 @@ func Start(apiPort int) {
 	gorillaMux.HandleFunc("/balance/{address}", balance).Methods("GET")
 	gorillaMux.HandleFunc("/mempool", mempool).Methods("GET")
 	gorillaMux.HandleFunc("/transaction", transaction).Methods("GET", "POST")
+	gorillaMux.HandleFunc("/wallet", publicwallet).Methods("GET", "POST")
 	fmt.Printf("Listening on http://localhost%s\n", port)
 	elizeutils.Errchk(http.ListenAndServe(port, gorillaMux))
 }

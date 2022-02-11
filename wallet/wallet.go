@@ -74,7 +74,9 @@ func Sign(w *wallet, TxID string) string {
 	return fmt.Sprintf("%x", append(r.Bytes(), s.Bytes()...))
 }
 
-func Verify(signature, address, hashedTxID string) bool {
+func Verify(signature, txID, address string) bool {
+	r, s, err := restoreBigInt(signature)
+	elizeutils.Errchk(err)
 	x, y, err := restoreBigInt(address)
 	elizeutils.Errchk(err)
 	publicKey := ecdsa.PublicKey{
@@ -82,10 +84,9 @@ func Verify(signature, address, hashedTxID string) bool {
 		X:     x,
 		Y:     y,
 	}
-
-	r, s, err := restoreBigInt(signature)
+	txIDbyte, err := hex.DecodeString(txID)
 	elizeutils.Errchk(err)
-	return ecdsa.Verify(&publicKey, []byte(hashedTxID), r, s)
+	return ecdsa.Verify(&publicKey, txIDbyte, r, s)
 }
 
 func restoreBigInt(hexaPayload string) (*big.Int, *big.Int, error) {
