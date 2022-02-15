@@ -3,6 +3,7 @@ package restapi
 import (
 	"elizebch/elizebch"
 	"elizebch/elizeutils"
+	"elizebch/p2p"
 	"elizebch/wallet"
 	"encoding/json"
 	"fmt"
@@ -138,9 +139,13 @@ func mempool(rw http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(rw).Encode(elizebch.ElizeMempool)
 }
 
-func publicwallet(rw http.ResponseWriter, r *http.Request) {
+func userWallet(rw http.ResponseWriter, r *http.Request) {
 	address := WalletAddress{wallet.Wallet().Address}
 	json.NewEncoder(rw).Encode(address)
+}
+
+func peer(rw http.ResponseWriter, r *http.Request) {
+
 }
 
 func Start(apiPort int) {
@@ -153,7 +158,9 @@ func Start(apiPort int) {
 	gorillaMux.HandleFunc("/balance/{address}", balance).Methods("GET")
 	gorillaMux.HandleFunc("/mempool", mempool).Methods("GET")
 	gorillaMux.HandleFunc("/transaction", transaction).Methods("GET", "POST")
-	gorillaMux.HandleFunc("/wallet", publicwallet).Methods("GET", "POST")
+	gorillaMux.HandleFunc("/wallet", userWallet).Methods("GET", "POST")
+	gorillaMux.HandleFunc("/ws", p2p.Upgrade).Methods("GET", "POST")
+	gorillaMux.HandleFunc("/peer", peer).Methods("GET", "POST")
 	fmt.Printf("Listening on http://localhost%s\n", port)
 	elizeutils.Errchk(http.ListenAndServe(port, gorillaMux))
 }
