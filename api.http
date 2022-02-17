@@ -32,3 +32,16 @@ POST http://localhost:4000/transaction
 http://localhost:4000/mempool
 ###
 http://localhost:4000/wallet
+###
+http://localhost:4000/ws
+###
+http://localhost:4000/peers
+###
+POST http://localhost:4000/peers
+
+{
+    "ip": "127.0.0.1",
+    "port": "3000"
+}
+###
+http://localhost:3000/peers

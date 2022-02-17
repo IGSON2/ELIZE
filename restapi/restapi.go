@@ -12,7 +12,12 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var port string
+var restPort string
+
+type addPeerPayload struct {
+	Ip   string `json:"ip"`
+	Port string `json:"port"`
+}
 
 type AddTxPayload struct {
 	To     string  `json:"to"`
@@ -42,7 +47,7 @@ type errorResponse struct {
 }
 
 func (u *URLConverter) MarshalText() (test []byte, err error) {
-	return []byte(fmt.Sprintf("http://localhost%s%s", port, *u)), nil
+	return []byte(fmt.Sprintf("http://localhost%s%s", restPort, *u)), nil
 }
 
 func documentation(rw http.ResponseWriter, r *http.Request) {
@@ -53,9 +58,14 @@ func documentation(rw http.ResponseWriter, r *http.Request) {
 			Description: "See Documentation",
 		},
 		{
+			URL:         URLConverter("/status"),
+			Method:      "GET",
+			Description: "See the Status of the Blockchain",
+		},
+		{
 			URL:         URLConverter("/blocks"),
 			Method:      "GET",
-			Description: "See All blocks",
+			Description: "See All Blocks",
 		},
 		{
 			URL:         URLConverter("/blocks"),
@@ -74,17 +84,24 @@ func documentation(rw http.ResponseWriter, r *http.Request) {
 			Description: "Get TxOuts for an Address",
 		},
 		{
-			URL:         URLConverter("/balance/{address}"),
+			URL:         URLConverter("/ws"),
 			Method:      "GET",
-			Description: "Get TxOuts for an Address",
+			Description: "Upgrade to WebSockets",
 		},
 	}
 	json.NewEncoder(rw).Encode(data)
 }
 
-func middleWare(next http.Handler) http.Handler {
+func jsonMiddleWare(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		rw.Header().Add("Content-Type", "application/json")
+		next.ServeHTTP(rw, r)
+	})
+}
+
+func loggerMiddleWare(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		fmt.Println(r.RequestURI)
 		next.ServeHTTP(rw, r)
 	})
 }
@@ -144,14 +161,21 @@ func userWallet(rw http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(rw).Encode(address)
 }
 
-func peer(rw http.ResponseWriter, r *http.Request) {
-
+func peers(rw http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "GET":
+		elizeutils.Errchk(json.NewEncoder(rw).Encode(p2p.Peers))
+	case "POST":
+		var peerPayload addPeerPayload
+		json.NewDecoder(r.Body).Decode(&peerPayload)
+		p2p.Addpeer(peerPayload.Ip, peerPayload.Port, restPort)
+	}
 }
 
 func Start(apiPort int) {
-	port = fmt.Sprintf(":%d", apiPort)
+	restPort = fmt.Sprintf(":%d", apiPort)
 	gorillaMux := mux.NewRouter()
-	gorillaMux.Use(middleWare)
+	gorillaMux.Use(jsonMiddleWare, loggerMiddleWare)
 	gorillaMux.HandleFunc("/", documentation).Methods("GET")
 	gorillaMux.HandleFunc("/blocks", blocks).Methods("GET", "POST")
 	gorillaMux.HandleFunc("/blocks/{hash:[a-f0-9]+}", oneblock).Methods("GET")
@@ -159,8 +183,8 @@ func Start(apiPort int) {
 	gorillaMux.HandleFunc("/mempool", mempool).Methods("GET")
 	gorillaMux.HandleFunc("/transaction", transaction).Methods("GET", "POST")
 	gorillaMux.HandleFunc("/wallet", userWallet).Methods("GET", "POST")
-	gorillaMux.HandleFunc("/ws", p2p.Upgrade).Methods("GET", "POST")
-	gorillaMux.HandleFunc("/peer", peer).Methods("GET", "POST")
-	fmt.Printf("Listening on http://localhost%s\n", port)
-	elizeutils.Errchk(http.ListenAndServe(port, gorillaMux))
+	gorillaMux.HandleFunc("/ws", p2p.Upgrade).Methods("GET")
+	gorillaMux.HandleFunc("/peers", peers).Methods("GET", "POST")
+	fmt.Printf("Listening on http://localhost%s\n", restPort)
+	elizeutils.Errchk(http.ListenAndServe(restPort, gorillaMux))
 }
