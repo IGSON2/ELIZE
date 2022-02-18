@@ -4,7 +4,6 @@ import (
 	"elizebch/elizeutils"
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/gorilla/websocket"
 )
@@ -13,19 +12,18 @@ var upgrader = websocket.Upgrader{}
 
 func Upgrade(rw http.ResponseWriter, r *http.Request) {
 	openPort := r.URL.Query().Get("openPort")
-
+	ip := elizeutils.Splitter(r.RemoteAddr, ":", 0)
 	upgrader.CheckOrigin = func(r *http.Request) bool {
-		return true
+		return openPort != "" && ip != ""
 	}
 	conn, err := upgrader.Upgrade(rw, r, nil)
 	elizeutils.Errchk(err)
-	result := strings.Split(r.RemoteAddr, ":")
-	fmt.Println(r.RemoteAddr)
-	initPeer(conn, result[0], openPort)
+	initPeer(conn, ip, openPort)
 }
 
 func Addpeer(ip, port, openPort string) {
-	conn, _, err := websocket.DefaultDialer.Dial(fmt.Sprintf("ws://%s:%s/ws?openPort=%s", ip, port, openPort), nil)
+	conn, _, err := websocket.DefaultDialer.Dial(fmt.Sprintf("ws://%s:%s/ws?openPort=%s", ip, port, openPort[1:]), nil)
 	elizeutils.Errchk(err)
-	initPeer(conn, ip, port)
+	p := initPeer(conn, ip, port)
+	sendNewstBlock(p)
 }

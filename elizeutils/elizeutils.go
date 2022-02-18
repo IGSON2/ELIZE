@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/gob"
+	"encoding/json"
 	"fmt"
 	"log"
+	"strings"
 )
 
 func Errchk(err error) {
@@ -27,4 +29,18 @@ func FromBytes(emptyStruct interface{}, data []byte) {
 
 func Hash(anything interface{}) string {
 	return fmt.Sprintf("%x", sha256.Sum256([]byte(fmt.Sprintf("%v", anything))))
+}
+
+func Splitter(s, sep string, i int) string {
+	r := strings.Split(s, sep)
+	if len(r) < i {
+		return ""
+	}
+	return r[i]
+}
+
+func ToJSON(i interface{}) []byte {
+	b, err := json.Marshal(i)
+	Errchk(err)
+	return b
 }

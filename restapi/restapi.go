@@ -164,7 +164,7 @@ func userWallet(rw http.ResponseWriter, r *http.Request) {
 func peers(rw http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
-		elizeutils.Errchk(json.NewEncoder(rw).Encode(p2p.Peers))
+		elizeutils.Errchk(json.NewEncoder(rw).Encode(p2p.AllPeers(&p2p.Peers)))
 	case "POST":
 		var peerPayload addPeerPayload
 		json.NewDecoder(r.Body).Decode(&peerPayload)
