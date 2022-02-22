@@ -49,6 +49,16 @@ func (b *Block) mine() {
 	b.Hash = hashedBlock
 }
 
+func (b *Block) setDifficulty() {
+	if b.Height == 1 {
+		b.Difficulty = defaultDifficulty
+	} else if b.Height%blockInterval == 0 {
+		b.recalculateDifficulty()
+	} else {
+		b.Difficulty = AllBlock()[0].Difficulty
+	}
+}
+
 func (b *Block) recalculateDifficulty() {
 	allblock := AllBlock()
 	actualTime := (allblock[0].TimeStamp - allblock[blockInterval-2].TimeStamp) / 60
@@ -59,16 +69,6 @@ func (b *Block) recalculateDifficulty() {
 	} else if actualTime > expectedTime+allowedRange {
 		b.Difficulty = allblock[0].Difficulty - 1
 		fmt.Println("BlockChain Difficulty has been decreased.")
-	}
-}
-
-func (b *Block) setDifficulty() {
-	if b.Height == 1 {
-		b.Difficulty = defaultDifficulty
-	} else if b.Height%blockInterval == 0 {
-		b.recalculateDifficulty()
-	} else {
-		b.Difficulty = AllBlock()[0].Difficulty
 	}
 }
 

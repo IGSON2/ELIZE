@@ -112,8 +112,9 @@ func blocks(rw http.ResponseWriter, r *http.Request) {
 		data := elizebch.AllBlock()
 		json.NewEncoder(rw).Encode(data)
 	case "POST":
-		elizebch.GetBlockchain().AddBlock()
+		newblock := elizebch.GetBlockchain().AddBlock()
 		rw.WriteHeader(http.StatusCreated)
+		p2p.BrodcastNewblock(newblock)
 	}
 }
 
@@ -172,12 +173,17 @@ func peers(rw http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func status(rw http.ResponseWriter, r *http.Request) {
+	json.NewEncoder(rw).Encode(elizebch.GetBlockchain())
+}
+
 func Start(apiPort int) {
 	restPort = fmt.Sprintf(":%d", apiPort)
 	gorillaMux := mux.NewRouter()
 	gorillaMux.Use(jsonMiddleWare, loggerMiddleWare)
 	gorillaMux.HandleFunc("/", documentation).Methods("GET")
 	gorillaMux.HandleFunc("/blocks", blocks).Methods("GET", "POST")
+	gorillaMux.HandleFunc("/status", status).Methods("GET")
 	gorillaMux.HandleFunc("/blocks/{hash:[a-f0-9]+}", oneblock).Methods("GET")
 	gorillaMux.HandleFunc("/balance/{address}", balance).Methods("GET")
 	gorillaMux.HandleFunc("/mempool", mempool).Methods("GET")

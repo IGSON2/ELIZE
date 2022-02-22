@@ -3,6 +3,7 @@ package p2p
 import (
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -33,6 +34,8 @@ func AllPeers(p *peerMap) []string {
 }
 
 func initPeer(initConn *websocket.Conn, ip, port string) *peer {
+	Peers.m.Lock()
+	defer Peers.m.Unlock()
 	key := fmt.Sprintf("%s:%s", ip, port)
 	p := &peer{
 		key:     key,
@@ -57,11 +60,12 @@ func (p *peer) close() {
 func (p *peer) write() {
 	defer p.close()
 	for {
-		m, ok := <-p.inbox
+		m, ok := <-p.inbox // If Channel is open -> OK
 		if !ok {
 			break
 		}
 		p.conn.WriteMessage(websocket.TextMessage, m)
+		fmt.Printf("%d : %s Write message\n", time.Now().UnixMilli(), p.key)
 	}
 }
 
@@ -73,6 +77,7 @@ func (p *peer) read() {
 		if err != nil {
 			break
 		}
+		fmt.Printf("%d : %s Detected message\n", time.Now().UnixMilli(), p.key)
 		handleMessage(&m, p)
 	}
 }
