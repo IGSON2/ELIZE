@@ -23,16 +23,37 @@ func Upgrade(rw http.ResponseWriter, r *http.Request) {
 	initPeer(conn, ip, openPort)
 }
 
-func Addpeer(ip, port, openPort string) {
+func AddPeer(ip, port, openPort string, broadcast bool) {
 	fmt.Printf("%s wants to connect to port %s\n", openPort, port)
-	conn, _, err := websocket.DefaultDialer.Dial(fmt.Sprintf("ws://%s:%s/ws?openPort=%s", ip, port, openPort[1:]), nil)
+	conn, _, err := websocket.DefaultDialer.Dial(fmt.Sprintf("ws://%s:%s/ws?openPort=%s", ip, port, openPort), nil)
 	elizeutils.Errchk(err)
 	p := initPeer(conn, ip, port)
-	sendNewstBlock(p) //:4000 -> :3000
+	if broadcast {
+		BroadcastNewPeer(p)
+		return
+	}
+	sendNewstBlock(p)
 }
 
-func BrodcastNewblock(b *elizebch.Block) {
+func BroadcastNewBlock(b *elizebch.Block) {
 	for _, p := range Peers.v {
 		notifyNewblock(b, p)
+	}
+}
+
+func BroadcastNewTx(t *elizebch.Tx) {
+	for _, p := range Peers.v {
+		notifyNewTx(t, p)
+	}
+}
+
+func BroadcastNewPeer(newPeer *peer) {
+	for key, p := range Peers.v {
+		fmt.Println("KEY : ", key)
+		if len(Peers.v) == 1 || key != newPeer.key {
+			address := fmt.Sprintf("%s:%s", newPeer.key, p.port)
+			fmt.Println("Notifyed Address : ", address)
+			notifyNewPeer(address, p)
+		}
 	}
 }

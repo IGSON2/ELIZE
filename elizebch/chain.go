@@ -64,17 +64,24 @@ func (b *blockchain) Replace(newblocks []*Block) {
 	fmt.Println("After", len(AllBlock()))
 }
 
-func (b *blockchain) AddPeerBlock(block *Block) {
+func (b *blockchain) AddPeerBlock(newblock *Block) {
 	b.m.Lock()
+	ElizeMempool().m.Lock()
 	defer b.m.Unlock()
+	defer m.m.Unlock()
 
 	b.Height += 1
-	b.CurrentDifficulty = block.Difficulty
-	b.NewestHash = block.Hash
+	b.CurrentDifficulty = newblock.Difficulty
+	b.NewestHash = newblock.Hash
 
 	database.SaveBlockchain(elizeutils.ToBytes(b))
-	database.SaveBlock(block.Hash, elizeutils.ToBytes(block))
+	database.SaveBlock(newblock.Hash, elizeutils.ToBytes(newblock))
 
-	// mempool
+	for _, tx := range newblock.Transactions {
+		_, ok := m.Txs[tx.ID]
+		if ok {
+			delete(m.Txs, tx.ID)
+		}
+	}
 
 }

@@ -4,6 +4,7 @@ import (
 	"elizebch/elizeutils"
 	"elizebch/wallet"
 	"errors"
+	"sync"
 	"time"
 )
 
@@ -37,11 +38,22 @@ type UTxOut struct {
 	Balance float64 `json:"balance"`
 }
 
-type Mempool struct {
-	Txs []*Tx `json:"tx"`
+type mempool struct {
+	Txs map[string]*Tx `json:"tx"`
+	m   sync.Mutex
 }
 
-var ElizeMempool = Mempool{}
+var m *mempool
+var memOnce sync.Once
+
+func ElizeMempool() *mempool {
+	memOnce.Do(func() {
+		m = &mempool{
+			Txs: make(map[string]*Tx),
+		}
+	})
+	return m
+}
 
 func (t *Tx) getId() {
 	t.ID = elizeutils.Hash(t)
@@ -136,19 +148,19 @@ func makeTxs(from, to string, amount float64) (*Tx, error) {
 	return tx, nil
 }
 
-func (m *Mempool) AddTxs(to string, amount float64) error {
+func (m *mempool) AddTxs(to string, amount float64) (*Tx, error) {
 	memTX, err := makeTxs(wallet.Wallet().Address, to, amount)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	m.Txs = append(m.Txs, memTX)
-	return nil
+	m.Txs[memTX.ID] = memTX
+	return memTX, nil
 }
 
 func isOnMempool(utxout *UTxOut) bool {
 	exist := false
 Outer:
-	for _, tx := range ElizeMempool.Txs {
+	for _, tx := range ElizeMempool().Txs {
 		for _, txin := range tx.TxIns {
 			if txin.TXID == utxout.TXID && txin.Index == utxout.Index {
 				exist = true
@@ -162,7 +174,7 @@ Outer:
 func AllTxs() []*Tx {
 	var Txs []*Tx
 	for _, block := range AllBlock() {
-		Txs = append(Txs, block.Transaction...)
+		Txs = append(Txs, block.Transactions...)
 	}
 	return Txs
 }
@@ -197,4 +209,10 @@ func txVerify(t *Tx) bool {
 		}
 	}
 	return verify
+}
+
+func (m *mempool) AddPeerTx(t *Tx) {
+	m.m.Lock()
+	defer m.m.Unlock()
+	m.Txs[t.ID] = t
 }

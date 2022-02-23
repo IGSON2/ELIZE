@@ -10,26 +10,26 @@ POST http://localhost:4000/blocks
     "message":"Data For My block"
 }
 ###
-http://localhost:4000/balance/fe18dcb3cfd49e694c6160328ad1944309dfefc7e96cc74827b5dd329e66483eb83198cceb5a95c5530f7cfa89991680a8b67a991d12d36275e10fb826f4f7ae?total=true
+http://localhost:4000/balance/e400abf7bee95781c14461772b2130e60fa2b7f9e759e595806d702569abd38ab8b73d7198b1583b9f9f7e5d36152ffd6adc3d879fd9a26b39bae9fd498841b4?total=true
 
 ###
 http://localhost:4000/balance/Lynn?total=true
 
 ###
-http://localhost:4000/balance/312e6e3e556d3db4b29dc4acc8d42ca74e4116a8bb54799551b0823db8547c42b494770384452dc668543bc7feb82463d9662cbbbe7e7deaa1a56fc1d384aaa3
+http://localhost:4000/balance/b28fc14ab63a5c3af7a09aefce4c899738e8ce3373ce70e991907b03086188f2e18b61a9ed280d6a3344a31c52c552377490b19502f0b04e3c4fd6679cd4dcfc?total=true
 
 ###
-http://localhost:4000/balance/Lynn
+http://localhost:4000/balance/lynn
 
 ### 
 POST http://localhost:4000/transaction
 
 {
     "to":"Lynn",
-    "amount":70
+    "amount":10
 }
 ###
-http://localhost:4000/mempool
+http://localhost:5000/mempool
 ###
 http://localhost:4000/wallet
 ###
@@ -37,11 +37,11 @@ http://localhost:4000/ws
 ###
 http://localhost:4000/peers
 ###
-POST http://localhost:4000/peers
+POST http://localhost:3000/peers
 
 {
     "ip": "127.0.0.1",
-    "port": "3000"
+    "port": "2000"
 }
 ###
 http://localhost:4000/peers

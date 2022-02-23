@@ -114,7 +114,7 @@ func blocks(rw http.ResponseWriter, r *http.Request) {
 	case "POST":
 		newblock := elizebch.GetBlockchain().AddBlock()
 		rw.WriteHeader(http.StatusCreated)
-		p2p.BrodcastNewblock(newblock)
+		p2p.BroadcastNewBlock(newblock)
 	}
 }
 
@@ -145,16 +145,18 @@ func balance(rw http.ResponseWriter, r *http.Request) {
 func transaction(rw http.ResponseWriter, r *http.Request) {
 	var txReqPayload AddTxPayload
 	elizeutils.Errchk(json.NewDecoder(r.Body).Decode(&txReqPayload))
-	err := elizebch.ElizeMempool.AddTxs(txReqPayload.To, txReqPayload.Amount)
+	tx, err := elizebch.ElizeMempool().AddTxs(txReqPayload.To, txReqPayload.Amount)
 	if err != nil {
+		rw.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(rw).Encode(errorResponse{err.Error()})
-	} else {
-		rw.WriteHeader(http.StatusCreated)
+		return
 	}
+	p2p.BroadcastNewTx(tx)
+	rw.WriteHeader(http.StatusCreated)
 }
 
 func mempool(rw http.ResponseWriter, r *http.Request) {
-	json.NewEncoder(rw).Encode(elizebch.ElizeMempool)
+	json.NewEncoder(rw).Encode(elizebch.ElizeMempool())
 }
 
 func userWallet(rw http.ResponseWriter, r *http.Request) {
@@ -169,7 +171,7 @@ func peers(rw http.ResponseWriter, r *http.Request) {
 	case "POST":
 		var peerPayload addPeerPayload
 		json.NewDecoder(r.Body).Decode(&peerPayload)
-		p2p.Addpeer(peerPayload.Ip, peerPayload.Port, restPort)
+		p2p.AddPeer(peerPayload.Ip, peerPayload.Port, restPort[1:], true)
 	}
 }
 

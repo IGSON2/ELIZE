@@ -11,13 +11,13 @@ import (
 )
 
 type Block struct {
-	Height      int    `json:"height"`
-	Hash        string `json:"hash"`
-	PrevHash    string `json:"prevhash,omitempty"`
-	Nonce       int    `json:"nonce"`
-	Difficulty  int    `json:"difficulty"`
-	TimeStamp   int64  `json:"timestamp"`
-	Transaction []*Tx  `json:"transactions"`
+	Height       int    `json:"height"`
+	Hash         string `json:"hash"`
+	PrevHash     string `json:"prevhash,omitempty"`
+	Nonce        int    `json:"nonce"`
+	Difficulty   int    `json:"difficulty"`
+	TimeStamp    int64  `json:"timestamp"`
+	Transactions []*Tx  `json:"transactions"`
 }
 
 const (
@@ -98,7 +98,11 @@ func AllBlock() []*Block {
 }
 
 func (b *Block) ConfirmTx() {
-	confirmedTx := append(ElizeMempool.Txs, CoinbaseTx(wallet.Wallet().Address))
-	ElizeMempool.Txs = []*Tx{}
-	b.Transaction = confirmedTx
+	var confirmedTx []*Tx
+	for _, tx := range ElizeMempool().Txs {
+		confirmedTx = append(confirmedTx, tx)
+	}
+	confirmedTx = append(confirmedTx, CoinbaseTx(wallet.Wallet().Address))
+	ElizeMempool().Txs = make(map[string]*Tx)
+	b.Transactions = confirmedTx
 }

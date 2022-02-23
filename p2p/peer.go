@@ -3,7 +3,6 @@ package p2p
 import (
 	"fmt"
 	"sync"
-	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -65,7 +64,6 @@ func (p *peer) write() {
 			break
 		}
 		p.conn.WriteMessage(websocket.TextMessage, m)
-		fmt.Printf("%d : %s Write message\n", time.Now().UnixMilli(), p.key)
 	}
 }
 
@@ -77,7 +75,6 @@ func (p *peer) read() {
 		if err != nil {
 			break
 		}
-		fmt.Printf("%d : %s Detected message\n", time.Now().UnixMilli(), p.key)
 		handleMessage(&m, p)
 	}
 }

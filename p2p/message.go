@@ -6,6 +6,7 @@ import (
 	"elizebch/elizeutils"
 	"encoding/json"
 	"fmt"
+	"strings"
 )
 
 type messageKind int
@@ -15,6 +16,8 @@ const (
 	MessageAllBlocksRequest
 	MessageAllBlocksResponse
 	MessageNotifyNewBlock
+	MessageNotifyNewTx
+	MessageNotifyNewPeer
 )
 
 type Message struct {
@@ -53,6 +56,16 @@ func notifyNewblock(b *elizebch.Block, p *peer) {
 	p.inbox <- m
 }
 
+func notifyNewTx(t *elizebch.Tx, p *peer) {
+	m := makeMessage(MessageNotifyNewTx, t)
+	p.inbox <- m
+}
+
+func notifyNewPeer(address string, p *peer) {
+	m := makeMessage(MessageNotifyNewPeer, address)
+	p.inbox <- m
+}
+
 func handleMessage(m *Message, p *peer) {
 	switch m.Kind {
 	case MessageNewestBlock:
@@ -81,5 +94,16 @@ func handleMessage(m *Message, p *peer) {
 		var payload *elizebch.Block
 		elizeutils.Errchk(json.Unmarshal(m.Payload, &payload))
 		elizebch.GetBlockchain().AddPeerBlock(payload)
+
+	case MessageNotifyNewTx:
+		var payload *elizebch.Tx
+		elizeutils.Errchk(json.Unmarshal(m.Payload, &payload))
+		elizebch.ElizeMempool().AddPeerTx(payload)
+
+	case MessageNotifyNewPeer:
+		var payload string
+		elizeutils.Errchk(json.Unmarshal(m.Payload, &payload))
+		parts := strings.Split(payload, ":")
+		AddPeer(parts[0], parts[1], parts[2], false)
 	}
 }
