@@ -18,6 +18,24 @@ const (
 
 var db *bolt.DB
 
+type DB struct{}
+
+func (DB) SaveBlock(hash string, data []byte) {
+	saveBlock(hash, data)
+}
+func (DB) SaveBlockchain(data []byte) {
+	saveBlockchain(data)
+}
+func (DB) LastBlockPoint() []byte {
+	return RestoreChain()
+}
+func (DB) FindBlock(hash string) []byte {
+	return FindOneBlock(hash)
+}
+func (DB) DeleteBlocks() {
+	deleteBlocks()
+}
+
 func GetDBname() string {
 	var portNum string
 	for _, arg := range os.Args {
@@ -28,7 +46,7 @@ func GetDBname() string {
 	return fmt.Sprintf("%s_%s.db", dbname, portNum)
 }
 
-func DB() *bolt.DB {
+func InitDB() {
 	if db == nil {
 		newDBpointer, err := bolt.Open(GetDBname(), 0644, nil)
 		db = newDBpointer
@@ -41,32 +59,31 @@ func DB() *bolt.DB {
 				return err
 			}))
 	}
-	return db
 }
 
 func Close() {
-	DB().Close()
+	db.Close()
 }
 
-func SaveBlock(hash string, data []byte) {
-	err := DB().Update(func(t *bolt.Tx) error {
+func saveBlock(hash string, data []byte) {
+	err := db.Update(func(t *bolt.Tx) error {
 		blockbucket := t.Bucket([]byte(blocksBucket))
 		return blockbucket.Put([]byte(hash), data)
 	})
 	elizeutils.Errchk(err)
 }
 
-func SaveBlockchain(data []byte) {
-	err := DB().Update(func(t *bolt.Tx) error {
+func saveBlockchain(data []byte) {
+	err := db.Update(func(t *bolt.Tx) error {
 		blockbucket := t.Bucket([]byte(chainBucket))
 		return blockbucket.Put([]byte(lastPoint), data)
 	})
 	elizeutils.Errchk(err)
 }
 
-func LastBlockPoint() []byte {
+func RestoreChain() []byte {
 	var data []byte
-	DB().View(func(t *bolt.Tx) error {
+	db.View(func(t *bolt.Tx) error {
 		bucket := t.Bucket([]byte(chainBucket))
 		data = bucket.Get([]byte(lastPoint))
 		return nil
@@ -74,9 +91,9 @@ func LastBlockPoint() []byte {
 	return data
 }
 
-func OneBlock(hash string) []byte {
+func FindOneBlock(hash string) []byte {
 	var data []byte
-	DB().View(func(t *bolt.Tx) error {
+	db.View(func(t *bolt.Tx) error {
 		bucket := t.Bucket([]byte(blocksBucket))
 		data = bucket.Get([]byte(hash))
 		return nil
@@ -84,8 +101,8 @@ func OneBlock(hash string) []byte {
 	return data
 }
 
-func EmptyBlockBucket() {
-	DB().Update(func(t *bolt.Tx) error {
+func deleteBlocks() {
+	db.Update(func(t *bolt.Tx) error {
 		elizeutils.Errchk(t.DeleteBucket([]byte(blocksBucket)))
 		_, err := t.CreateBucket([]byte(blocksBucket))
 		elizeutils.Errchk(err)

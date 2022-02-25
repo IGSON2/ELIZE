@@ -1,7 +1,6 @@
 package elizebch
 
 import (
-	"elizebch/database"
 	"elizebch/elizeutils"
 	"elizebch/wallet"
 	"errors"
@@ -27,14 +26,15 @@ const (
 	allowedRange      int64 = 2
 )
 
-func (b *Block) createBlock(chain *blockchain) {
-	*b = Block{
+func createBlock(chain *blockchain) *Block {
+	newBlock := &Block{
 		Height:   chain.Height + 1,
 		PrevHash: chain.NewestHash,
 	}
-	b.setDifficulty()
-	b.mine()
-	database.SaveBlock(b.Hash, elizeutils.ToBytes(b))
+	newBlock.setDifficulty()
+	newBlock.mine()
+	dbStorage.SaveBlock(newBlock.Hash, elizeutils.ToBytes(newBlock))
+	return newBlock
 }
 
 func (b *Block) mine() {
@@ -74,7 +74,7 @@ func (b *Block) recalculateDifficulty() {
 
 func FindBlock(hash string) (*Block, error) {
 	var EmptyBlock = &Block{}
-	data := database.OneBlock(hash)
+	data := dbStorage.FindBlock(hash)
 	if data == nil {
 		return nil, errors.New("this block doesn't exist")
 	} else {
@@ -85,7 +85,9 @@ func FindBlock(hash string) (*Block, error) {
 
 func AllBlock() []*Block {
 	newestBlock, err := FindBlock(GetBlockchain().NewestHash)
-	elizeutils.Errchk(err)
+	if err != nil {
+		return []*Block{{Difficulty: defaultDifficulty}}
+	}
 	var allBlocks = []*Block{newestBlock}
 	for {
 		newestBlock, err = FindBlock(newestBlock.PrevHash)
