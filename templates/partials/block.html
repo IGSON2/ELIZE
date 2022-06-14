@@ -1,14 +1,17 @@
 {{define "block"}}
-    <div class="block">
-        <div><b>Height </b> <span>{{.Height}}</span></div>
-        <div><b>Data  [ <span style="color: rgb(178, 25, 192)">{{.Data}}</span> ]</b></div>
-        <div><b>Hash </b> <span>{{.Hash}}</span></div>
-        <div>
-            {{if .PrevHash}}
-            <b>PrevHash </b> <span>{{.PrevHash}}</span>
-            {{end}}
-        </div>
-        <div><b>Difficulty </b> <span>{{.Difficulty}}</span></div>
-        <div><b>Nonce </b> <span>{{.Nonce}}</span></div>
-    </div>
+<div class="block">
+  <div><b>Height </b> <span>{{.Height}}</span></div>
+  <div>
+    <b style="color: rgb(178, 25, 192)">Transactions <br /></b>{{range
+    .Transactions}} {{template "transaction" .}} {{end}}
+  </div>
+  <div><b>Hash </b> <span>{{.Hash}}</span></div>
+  <div>
+    {{if .PrevHash}}
+    <b>PrevHash </b> <span>{{.PrevHash}}</span>
+    {{end}}
+  </div>
+  <div><b>Difficulty </b> <span>{{.Difficulty}}</span></div>
+  <div><b>Nonce </b> <span>{{.Nonce}}</span></div>
+</div>
 {{end}}

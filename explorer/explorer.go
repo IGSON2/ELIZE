@@ -13,10 +13,21 @@ const (
 	partialsLocation string = "templates/partials/*.html"
 )
 
-type excuteData struct {
+type homeData struct {
 	PageTitle   string
 	Blocks      []*elizebch.Block
 	BlockHeight int
+}
+
+type memData struct {
+	PageTitle string
+	TxIns     []elizebch.TxIn
+	TxOuts    []elizebch.TxOut
+}
+
+type PostedData struct {
+	User    string
+	Balance float64
 }
 
 var (
@@ -26,20 +37,31 @@ var (
 
 func home(rw http.ResponseWriter, r *http.Request) {
 	currentChain := elizebch.AllBlock()
-	data := excuteData{"HOME", currentChain, currentChain[0].Height}
+	data := homeData{"HOME", currentChain, currentChain[0].Height}
 	elizeutils.Errchk(templates.ExecuteTemplate(rw, "home", data))
 }
 
 func add(rw http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
-		data := excuteData{"ADD", nil, elizebch.GetBlockchain().Height}
+		data := homeData{"ADD", nil, elizebch.GetBlockchain().Height}
 		elizeutils.Errchk(templates.ExecuteTemplate(rw, "add", data))
 	case "POST":
 		r.ParseForm()
-		data := r.Form.Get("blockData")
+		Pdata := PostedData{r.Form.Get("user"), elizeutils.ToInt(r.Form.Get("balance"))}
+		elizebch.ElizeMempool().AddTxs(Pdata.User, Pdata.Balance)
+		http.Redirect(rw, r, "/", http.StatusPermanentRedirect)
+	}
+}
+
+func mempool(rw http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "GET":
+		data := memData{PageTitle: "MEMPOOL"}
+		data.TxIns, data.TxOuts = elizebch.ElizeMempool().AllMemTx()
+		elizeutils.Errchk(templates.ExecuteTemplate(rw, "mempool", data))
+	case "POST":
 		elizebch.GetBlockchain().AddBlock()
-		fmt.Println("Added Data : ", data)
 		http.Redirect(rw, r, "/", http.StatusPermanentRedirect)
 	}
 }
@@ -51,5 +73,6 @@ func Start(explorerPort int) {
 	templates = template.Must(templates.ParseGlob(partialsLocation))
 	http.HandleFunc("/", home)
 	http.HandleFunc("/add", add)
+	http.HandleFunc("/mempool", mempool)
 	http.ListenAndServe(port, nil)
 }

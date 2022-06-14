@@ -1,0 +1,34 @@
+{{define "mempool"}}
+<!DOCTYPE html>
+<html lang="en">
+  {{template "head" .PageTitle}}
+  <body>
+    <header>
+      <nav>
+        <a href="/" style="color: black"><h1>ELIZÉ</h1></a>
+        <ul>
+          <li>
+            <a href="/" style="color: black">Home</a>
+          </li>
+          <li>
+            <a href="/add" style="color: black">Add</a>
+          </li>
+          <li>
+            <a href="/mempool" style="color: black">Mempool</a>
+          </li>
+        </ul>
+      </nav>
+    </header>
+    <main>
+      <b>TxInputs</b><br />
+      {{range .TxIns}} {{template "txins" .}} {{end}}
+      <b>TxOutputs</b><br />
+      {{range .TxOuts}} {{template "txouts" .}} {{end}}
+    </main>
+    <form method="POST">
+      <button>Mine !</button>
+    </form>
+    {{template "footer"}}
+  </body>
+</html>
+{{end}}

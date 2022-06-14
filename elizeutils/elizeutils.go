@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 )
 
@@ -43,4 +44,10 @@ func ToJSON(i interface{}) []byte {
 	b, err := json.Marshal(i)
 	Errchk(err)
 	return b
+}
+
+func ToInt(s string) float64 {
+	i, err := strconv.ParseFloat(s, 64)
+	Errchk(err)
+	return i
 }

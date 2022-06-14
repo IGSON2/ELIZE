@@ -5,12 +5,25 @@
   <body>
     {{template "header" .BlockHeight}}
     <main>
-        <form method="POST">
-            <input type="text" placeholder="Data for your block" required name = "blockData"/>
-            <button>Add Block</button>
-        </form>
+      <form method="POST">
+        <input
+          type="text"
+          placeholder="Who will you send Elize to?"
+          required
+          name="user"
+        />
+        <input
+          type="number"
+          step="0.1"
+          min="0"
+          placeholder="How many?"
+          required
+          name="balance"
+        />
+        <button>Add Block</button>
+      </form>
     </main>
-  {{template "footer"}}
+    {{template "footer"}}
   </body>
 </html>
-{{end}} 
+{{end}}

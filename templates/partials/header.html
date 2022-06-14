@@ -1,16 +1,19 @@
 {{define "header"}}
 <header>
-      <nav>
-        <a href="/" style="color: black"><h1>ELIZÉ</h1></a>
-        <ul>
-          <li>
-            <a href="/"style="color: black">Home</a>
-          </li>
-          <li>
-            <a href="/add"style="color: black">Add</a>
-          </li>
-        </ul>
-      </nav>
-      <h1>Block Height {{.}}</h1>
-    </header>
-{{end}} 
+  <nav>
+    <a href="/" style="color: black"><h1>ELIZÉ</h1></a>
+    <ul>
+      <li>
+        <a href="/" style="color: black">Home</a>
+      </li>
+      <li>
+        <a href="/add" style="color: black">Add</a>
+      </li>
+      <li>
+        <a href="/mempool" style="color: black">Mempool</a>
+      </li>
+    </ul>
+  </nav>
+  <h1>Block Height {{.}}</h1>
+</header>
+{{end}}
