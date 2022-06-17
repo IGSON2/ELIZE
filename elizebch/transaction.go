@@ -4,7 +4,6 @@ import (
 	"elizebch/elizeutils"
 	"elizebch/wallet"
 	"errors"
-	"fmt"
 	"sync"
 	"time"
 )
@@ -129,6 +128,7 @@ func makeTxs(from, to string, amount float64) (*Tx, error) {
 		txIns = append(txIns, &TxIn{uTxOut.TXID, uTxOut.Index, ""})
 		total += uTxOut.Balance
 	}
+
 	if change := (total - amount); change != 0 {
 		changeTxOut := &TxOut{from, change}
 		txOuts = append(txOuts, changeTxOut)
@@ -140,6 +140,7 @@ func makeTxs(from, to string, amount float64) (*Tx, error) {
 		TxIns:     txIns,
 		TxOuts:    txOuts,
 	}
+
 	tx.getId()
 	tx.sign()
 	verify := txVerify(tx)
@@ -151,6 +152,7 @@ func makeTxs(from, to string, amount float64) (*Tx, error) {
 
 func (m *Mempool) AddTxs(to string, amount float64) (*Tx, error) {
 	memTX, err := makeTxs(wallet.Wallet().Address, to, amount)
+
 	if err != nil {
 		return nil, err
 	}
@@ -172,22 +174,13 @@ Outer:
 	return exist
 }
 
-func (m *Mempool) AllMemTx() ([]TxIn, []TxOut) {
-	var txIns []TxIn
-	var txOuts []TxOut
+func (m *Mempool) AllMemTx() []Tx {
+	var txs []Tx
 	for _, tx := range m.Txs {
-		fmt.Println("Tx : ", tx)
-		for _, v := range tx.TxIns {
-			fmt.Println("In : ", *v)
-			txIns = append(txIns, *v)
-		}
-		for _, v := range tx.TxOuts {
-			fmt.Println("Out : ", *v)
-			txOuts = append(txOuts, *v)
-		}
+		txs = append(txs, *tx)
 	}
 
-	return txIns, txOuts
+	return txs
 }
 
 func AllTxs() []*Tx {

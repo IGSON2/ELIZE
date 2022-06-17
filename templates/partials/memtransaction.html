@@ -1,0 +1,14 @@
+{{define "memtransaction"}}
+<div style="border-bottom: 1px solid #aaa; padding-bottom: 5%">
+  <h3>ID [ <span>{{.ID}}</span> ]</h3>
+  <h3>TimeStamp [ <span>{{.TimeStamp}}</span> ]</h3>
+  <div>
+    <h3>TxInputs</h3>
+    {{range .TxIns}} {{template "txins" .}} {{end}}
+  </div>
+  <div>
+    <h3>TxOutputs</h3>
+    {{range .TxOuts}} {{template "txouts" .}} {{end}}
+  </div>
+</div>
+{{end}}

@@ -1,8 +1,8 @@
 package cli
 
 import (
-	"elizebch/explorer"
 	"elizebch/restapi"
+	"elizebch/sample_explorer"
 	"flag"
 	"fmt"
 	"os"
@@ -28,7 +28,7 @@ func Start() {
 	case "rest":
 		restapi.Start(*port)
 	case "html":
-		explorer.Start(*port)
+		sample_explorer.Start(*port)
 	default:
 		usage()
 	}
