@@ -1,7 +1,7 @@
 package database
 
 import (
-	"elizebch/elizeutils"
+	"elize/elizeutils"
 	"fmt"
 	"os"
 	"strings"

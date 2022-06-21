@@ -1,9 +1,9 @@
 package p2p
 
 import (
-	"elizebch/database"
-	"elizebch/elizebch"
-	"elizebch/elizeutils"
+	"elize/database"
+	"elize/elizebch"
+	"elize/elizeutils"
 	"encoding/json"
 	"fmt"
 	"strings"

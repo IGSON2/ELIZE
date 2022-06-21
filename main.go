@@ -1,8 +1,8 @@
 package main
 
 import (
-	"elizebch/cli"
-	"elizebch/database"
+	"elize/cli"
+	"elize/database"
 )
 
 func main() {

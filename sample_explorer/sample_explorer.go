@@ -1,9 +1,9 @@
 package sample_explorer
 
 import (
-	"elizebch/elizebch"
-	"elizebch/elizeutils"
-	"elizebch/wallet"
+	"elize/elizebch"
+	"elize/elizeutils"
+	"elize/wallet"
 	"fmt"
 	"html/template"
 	"net/http"

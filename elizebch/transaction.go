@@ -1,8 +1,8 @@
 package elizebch
 
 import (
-	"elizebch/elizeutils"
-	"elizebch/wallet"
+	"elize/elizeutils"
+	"elize/wallet"
 	"errors"
 	"sync"
 	"time"

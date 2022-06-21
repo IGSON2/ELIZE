@@ -1,6 +1,6 @@
 package elizebch
 
-import "elizebch/database"
+import "elize/database"
 
 type fakeDB struct {
 	fakeLastBLockPoint func() []byte

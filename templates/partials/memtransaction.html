@@ -4,11 +4,11 @@
   <h3>TimeStamp [ <span>{{.TimeStamp}}</span> ]</h3>
   <div>
     <h3>TxInputs</h3>
-    {{range .TxIns}} {{template "txins" .}} {{end}}
+    {{range .TxIns}} {{template "memtxins" .}} {{end}}
   </div>
   <div>
     <h3>TxOutputs</h3>
-    {{range .TxOuts}} {{template "txouts" .}} {{end}}
+    {{range .TxOuts}} {{template "memtxouts" .}} {{end}}
   </div>
 </div>
 {{end}}

@@ -1,8 +1,8 @@
 package elizebch
 
 import (
-	"elizebch/database"
-	"elizebch/elizeutils"
+	"elize/database"
+	"elize/elizeutils"
 	"fmt"
 	"sync"
 )

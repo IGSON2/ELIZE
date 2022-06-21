@@ -1,10 +1,10 @@
 package restapi
 
 import (
-	"elizebch/elizebch"
-	"elizebch/elizeutils"
-	"elizebch/p2p"
-	"elizebch/wallet"
+	"elize/elizebch"
+	"elize/elizeutils"
+	"elize/p2p"
+	"elize/wallet"
 	"encoding/json"
 	"fmt"
 	"net/http"

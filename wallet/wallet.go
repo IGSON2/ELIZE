@@ -5,7 +5,7 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/x509"
-	"elizebch/elizeutils"
+	"elize/elizeutils"
 	"encoding/hex"
 	"fmt"
 	"math/big"

@@ -1,8 +1,8 @@
 package cli
 
 import (
-	"elizebch/restapi"
-	"elizebch/sample_explorer"
+	"elize/restapi"
+	"elize/sample_explorer"
 	"flag"
 	"fmt"
 	"os"

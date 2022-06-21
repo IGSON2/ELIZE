@@ -1,8 +1,8 @@
 package p2p
 
 import (
-	"elizebch/elizebch"
-	"elizebch/elizeutils"
+	"elize/elizebch"
+	"elize/elizeutils"
 	"fmt"
 	"net/http"
 

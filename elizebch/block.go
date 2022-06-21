@@ -1,8 +1,8 @@
 package elizebch
 
 import (
-	"elizebch/elizeutils"
-	"elizebch/wallet"
+	"elize/elizeutils"
+	"elize/wallet"
 	"errors"
 	"fmt"
 	"strings"
@@ -64,10 +64,10 @@ func (b *Block) recalculateDifficulty() {
 	actualTime := (allblock[0].TimeStamp - allblock[blockInterval-2].TimeStamp) / 60
 	expectedTime := int64(minuteInterval * blockInterval)
 	if actualTime < expectedTime-allowedRange {
-		b.Difficulty = allblock[0].Difficulty + 1
+		b.Difficulty = elize.CurrentDifficulty + 1
 		fmt.Println("BlockChain Difficulty has been increased.")
 	} else if actualTime > expectedTime+allowedRange {
-		b.Difficulty = allblock[0].Difficulty - 1
+		b.Difficulty = elize.CurrentDifficulty - 1
 		fmt.Println("BlockChain Difficulty has been decreased.")
 	}
 }
