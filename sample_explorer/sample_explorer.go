@@ -95,5 +95,5 @@ func Start(explorerPort int) {
 	http.HandleFunc("/add", add)
 	http.HandleFunc("/mempool", mempool)
 	http.HandleFunc("/errors", errors)
-	http.ListenAndServe(port, nil)
+	elizeutils.Errchk(http.ListenAndServe(port, nil))
 }

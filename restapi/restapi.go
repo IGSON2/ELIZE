@@ -12,6 +12,8 @@ import (
 	"github.com/gorilla/mux"
 )
 
+const domain string = "getnyehing.duckdns.org"
+
 var restPort string
 
 type addPeerPayload struct {
@@ -47,7 +49,7 @@ type errorResponse struct {
 }
 
 func (u *URLConverter) MarshalText() (test []byte, err error) {
-	return []byte(fmt.Sprintf("http://localhost%s%s", restPort, *u)), nil
+	return []byte(fmt.Sprintf("http://%s%s%s", domain, restPort, *u)), nil
 }
 
 func documentation(rw http.ResponseWriter, r *http.Request) {

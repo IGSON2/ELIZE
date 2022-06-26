@@ -74,7 +74,7 @@ func (b *blockchain) Replace(newblocks []*Block) {
 
 func (b *blockchain) AddPeerBlock(newblock *Block) {
 	b.m.Lock()
-	ElizeMempool().m.Lock()
+	m.m.Lock()
 	defer b.m.Unlock()
 	defer m.m.Unlock()
 

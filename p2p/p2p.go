@@ -50,7 +50,7 @@ func BroadcastNewTx(t *elizebch.Tx) {
 func BroadcastNewPeer(newPeer *peer) {
 	for key, p := range Peers.v {
 		fmt.Println("KEY : ", key)
-		if len(Peers.v) == 1 || key != newPeer.key {
+		if key != newPeer.key {
 			address := fmt.Sprintf("%s:%s", newPeer.key, p.port)
 			fmt.Println("Notifyed Address : ", address)
 			notifyNewPeer(address, p)
